@@ -25,6 +25,7 @@ module.exports = {
   productionSourceMap: false,
   devServer: {
     port: port,
+    hotOnly: true, // 热更新
     open: true,
     overlay: {
       warnings: false,
@@ -38,6 +39,14 @@ module.exports = {
         changeOrigin: true,
         pathRewrite: {
           ['^' + process.env.VUE_APP_BASE_API]: ''
+        }
+      },
+      '/apolloApi': {
+        target: 'http://47.101.217.119/graphql.php',
+        // secure: false,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/apolloApi': ''
         }
       }
     },
@@ -56,7 +65,6 @@ module.exports = {
   chainWebpack(config) {
     config.plugins.delete('preload') // TODO: need test
     config.plugins.delete('prefetch') // TODO: need test
-
     // set svg-sprite-loader
     config.module
       .rule('svg')
@@ -88,7 +96,7 @@ module.exports = {
     config
     // https://webpack.js.org/configuration/devtool/#development
       .when(process.env.NODE_ENV === 'development',
-        config => config.devtool('cheap-source-map')
+        /*config => config.devtool('cheap-source-map')*/
       )
 
     config
