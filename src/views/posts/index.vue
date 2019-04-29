@@ -21,11 +21,22 @@
 
     <ul class="post-list">
       <li class="postItem" v-for="(post,index) in postList">
-        <div class="image">
+        <div class="image" @click.stop="bigImageEvent(post.photo_list[0].url)">
           <img :src="post.photo_list.length>0?post.photo_list[0].url:''" alt="">
+        </div>
+        <div class="postState">
+          <el-tag type="success">已通过</el-tag>
+        </div>
+        <div class="review">
+          <el-button type="primary">通过</el-button>
+          <el-button type="danger">拒绝</el-button>
         </div>
       </li>
     </ul>
+
+    <el-dialog :visible.sync="bigImageDialog">
+      <img width="100%" :src="bigImageUrl" alt="">
+    </el-dialog>
   </div>
 </template>
 
@@ -48,7 +59,9 @@
           pageIndex: 0,
           pageSize: 30,
         },
-        postList: []
+        postList: [],
+        bigImageUrl:'',
+        bigImageDialog:false,
       }
     },
     props: {},
@@ -136,6 +149,7 @@
         this.getPosts(true);
       },
 
+      //处理数据
       buildPosts(posts) {
         let index = this.postList.length;
         for (var i = 0; i < posts.length; i++) {
@@ -144,6 +158,12 @@
           index++;
         }
 
+      },
+
+      //展示大图
+      bigImageEvent(url){
+        this.bigImageUrl=url;
+        this.bigImageDialog=true;
       },
     },
     computed: {},
@@ -185,7 +205,7 @@
           margin-right 0
         .image
           width 100%
-          height 100%
+          height 240px
           position: relative
           overflow: hidden
           > img
@@ -196,4 +216,17 @@
             width: auto
             max-width: 100%
             max-height: 100%
+        .postState
+          height 24px
+          margin-bottom 6px
+          .el-tag
+            height 24px
+            line-height 24px
+        .review
+          height 30px
+          .el-button
+            height 30px
+            padding 0 20px
+            line-height 30px
+            margin-right 30px
 </style>

@@ -64,7 +64,21 @@ export const constantRoutes = [
       }
     ]
   },
+  {
+    path: '/users',
+    component: Layout,
+    redirect: '/users/index',
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/userManage/index'),
+        name: 'users',
+        meta: {title: '用户管理', icon: 'user', noCache: true}
+      }
+    ]
+  },
 ]
+
 export const asyncRoutes = [];
 /*export const asyncRoutes = [
   {
