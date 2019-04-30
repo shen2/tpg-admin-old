@@ -25,11 +25,17 @@
           <img :src="post.photo_list.length>0?post.photo_list[0].url:''" alt="">
         </div>
         <div class="postState">
-          <el-tag type="success">已通过</el-tag>
+          <el-tag>{{post.status|postStatus}}</el-tag>
+          <el-tag v-if="post.first_moderation!==null" :type="post.first_moderation?'warning':'danger'">
+            {{post.first_moderation?'一审中':'一审拒绝'}}
+          </el-tag>
+          <el-tag v-if="post.second_moderation!==null" :type="post.second_moderation?'warning':'danger'">
+            {{post.second_moderation?'二审中':'二审拒绝'}}
+          </el-tag>
         </div>
         <div class="review">
-          <el-button type="primary">通过</el-button>
-          <el-button type="danger">拒绝</el-button>
+          <el-button type="primary" @click.stop="postModerate(post.id,index,'accept')">通过</el-button>
+          <el-button type="danger" @click.stop="postModerate(post.id,index,'reject')">拒绝</el-button>
         </div>
       </li>
     </ul>
@@ -60,8 +66,8 @@
           pageSize: 30,
         },
         postList: [],
-        bigImageUrl:'',
-        bigImageDialog:false,
+        bigImageUrl: '',
+        bigImageDialog: false,
       }
     },
     props: {},
@@ -121,6 +127,7 @@
                      content
                      tags
                      first_moderation
+                     second_moderation
                      viewerCanDelete
                      photo_list{
                       id
@@ -161,13 +168,72 @@
       },
 
       //展示大图
-      bigImageEvent(url){
-        this.bigImageUrl=url;
-        this.bigImageDialog=true;
+      bigImageEvent(url) {
+        this.bigImageUrl = url;
+        this.bigImageDialog = true;
+      },
+
+      /**
+       * 更改帖子状态
+       * @param post_id 帖子ID
+       * @param index 帖子下标
+       * @param state 状态
+       */
+      postModerate(post_id, index, state) {
+        this.$apollo.mutate({
+          mutation: gql`
+            mutation postModerate($post_id:ObjectId!,$action:ModerateAction!) {
+                postModerate(post_id:$post_id,action:$action){
+                    id
+                    first_moderation
+                    second_moderation
+                    status
+                }
+            }
+          `,
+          variables: {
+            post_id: post_id,
+            action: state
+          }
+        })
+          .then((res) => {
+            if (!res.data.error) {
+              this.postList[index].first_moderation = res.data.postModerate.first_moderation;
+              this.postList[index].second_moderation = res.data.postModerate.second_moderation;
+              this.postList[index].status = res.data.postModerate.status;
+              if(this.postList[index].first_moderation===false){
+                this.$message.success('一审已拒绝');
+              }
+              else {
+                this.$message.success('一审已通过');
+              }
+
+            }
+          })
+          .catch((error) => {
+
+          })
       },
     },
     computed: {},
     components: {},
+    filters: {
+      postStatus(value) {
+        let status;
+        switch (value) {
+          case 'deleted':
+            status = '已删除';
+            break;
+          case 'private':
+            status = '私密';
+            break;
+          case 'public':
+            status = '公开';
+            break;
+        }
+        return status;
+      }
+    },
     created() {
 
     },
@@ -218,7 +284,7 @@
             max-height: 100%
         .postState
           height 24px
-          margin-bottom 6px
+          margin 3px 0
           .el-tag
             height 24px
             line-height 24px

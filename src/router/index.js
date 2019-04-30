@@ -60,7 +60,7 @@ export const constantRoutes = [
         path: 'index',
         component: () => import('@/views/posts/index'),
         name: 'posts',
-        meta: {title: '待审核', icon: 'clipboard', noCache: true}
+        meta: {title: '帖子管理', icon: 'clipboard', noCache: true}
       }
     ]
   },
